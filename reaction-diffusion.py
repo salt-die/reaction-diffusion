@@ -3,9 +3,9 @@
 """
 Pygame implementation of reaction-diffusion.
 
-One can hide/show the sliders with 'esc'.
-Click to add more chemical B.
-Reset with 'r'.
+'esc' to hide/show the sliders
+click to add more chemical
+Reset with 'r'
 """
 import numpy as np
 import pygame
