@@ -95,18 +95,18 @@ def reactdiffuse():
                 elif event.key == pygame.K_ESCAPE:
                     variables.hide_sliders = not variables.hide_sliders
             elif event.type == pygame.MOUSEBUTTONDOWN:
-                pos = pygame.mouse.get_pos()
-                for s in sliders:
-                    if s.button_rect.collidepoint(pos):
-                        s.hit = True
-                if event.type == pygame.MOUSEBUTTONDOWN and\
-                   not any([s.hit for s in sliders]):
-                    try:
-                        variables.B_array[pos[0] - 4:pos[0] + 5,\
-                                          pos[1] - 4:pos[1] + 5] = 1
-                    except ValueError:
-                        #print("Poked too close to border.")
-                        pass
+                if event.button == pygame.BUTTON_LEFT:
+                    pos = pygame.mouse.get_pos()
+                    for s in sliders:
+                        if s.button_rect.collidepoint(pos):
+                            s.hit = True
+                    if not any([s.hit for s in sliders]):
+                        try:
+                            variables.B_array[pos[0] - 4:pos[0] + 5,\
+                                              pos[1] - 4:pos[1] + 5] = 1
+                        except ValueError:
+                            #print("Poked too close to border.")
+                            pass
             elif event.type == pygame.MOUSEBUTTONUP:
                 for s in sliders:
                     s.hit = False
