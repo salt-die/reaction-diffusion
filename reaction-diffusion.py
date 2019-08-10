@@ -5,7 +5,7 @@ Pygame implementation of reaction-diffusion.
 
 'esc' to hide/show the sliders
 click to add more chemical
-Reset with 'r'
+'r' to reset
 """
 import numpy as np
 import pygame
