@@ -7,4 +7,4 @@ Pygame implementation of reaction-diffusion.
 
 click to add more chemical
 
-reset with 'r'
+'r' to reset
