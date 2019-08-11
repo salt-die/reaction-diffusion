@@ -96,19 +96,20 @@ def reactdiffuse():
         arrays.laplace_A = nd.convolve(arrays.A, weights, mode='wrap')
         arrays.laplace_B = nd.convolve(arrays.B, weights, mode='wrap')
 
-        new_A = arrays.A + params.diffusion_of_A * arrays.laplace_A -\
-                arrays.A * arrays.B**2 + params.feed * (1 - arrays.A)
-        new_B = arrays.B + params.diffusion_of_B * arrays.laplace_B +\
-                arrays.A * arrays.B**2 - (params.kill + params.feed) * arrays.B
+        arrays.new_A = arrays.A + params.diffusion_of_A * arrays.laplace_A -\
+                       arrays.A * arrays.B**2 + params.feed * (1 - arrays.A)
+        arrays.new_B = arrays.B + params.diffusion_of_B * arrays.laplace_B +\
+                       arrays.A * arrays.B**2 - \
+                       (params.kill + params.feed) * arrays.B
 
-        arrays.A = np.clip(new_A, 0, 1)
-        arrays.B = np.clip(new_B, 0, 1)
+        arrays.A = np.clip(arrays.new_A, 0, 1)
+        arrays.B = np.clip(arrays.new_B, 0, 1)
 
     def color():
         """
         Outputs a color array that depends on A & B.
         """
-        difference = ((arrays.A - arrays.B + 1) * 127.5).astype(int)
+        difference = ((arrays.B - arrays.A+ 1) * 127.5).astype(int)
         return np.dstack([difference for i in range(3)])
 
     def get_user_input():
@@ -141,7 +142,7 @@ def reactdiffuse():
                 params.feed = feed_slider.val
                 params.diffusion_of_A = diff_A_slider.val
                 params.diffusion_of_B = diff_B_slider.val
-    
+
     def add_substance():
         if not any([slider.hit for slider in sliders]):
             try:
@@ -151,7 +152,7 @@ def reactdiffuse():
             except ValueError:
                 #Too close to border
                 pass
-    
+
     def reset():
         """
         Resets arrays.
@@ -174,7 +175,7 @@ def reactdiffuse():
     window_dim = [500, 500]
     window = pygame.display.set_mode(window_dim)
     params = types.SimpleNamespace(diffusion_of_A=1., diffusion_of_B=.5,\
-                                   feed = .0550, kill= .0620)
+                                   feed = .01793, kill= .055)
     arrays = types.SimpleNamespace()
     reset()
     feed_slider = Slider("feed = ", params.feed, .001, .08, 20, 20, window)
@@ -186,7 +187,7 @@ def reactdiffuse():
     sliders = [feed_slider, kill_slider, diff_A_slider, diff_B_slider]
     hide_sliders = False
     mouse_down = False
-    
+
     drop = np.array([[0., 0., 1., 1., 1., 1., 1., 0., 0.],\
                      [0., 1., 1., 1., 1., 1., 1., 1., 0.],\
                      [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
