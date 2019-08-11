@@ -18,13 +18,16 @@ class Slider():
     Slider code lifted from
     https://www.dreamincode.net/forums/topic/401541-buttons-and-sliders-in-pygame/
     """
-    def __init__(self, name, val, min_v, max_v, xpos, ypos, window):
+    def __init__(self, name, val, min_v, max_v, xpos, ypos, window,\
+                 width=150, height=30):
         self.val = val
         self.min_v = min_v
         self.max_v = max_v
         self.xpos = xpos
         self.ypos = ypos
-        self.surf = pygame.surface.Surface((90, 30))
+        self.width = width
+        self.height = height
+        self.surf = pygame.surface.Surface((self.width, self.height))
         self.surf.set_alpha(200)
         self.name = name
         self.hit = False
@@ -34,26 +37,29 @@ class Slider():
                                               (255, 255, 255))
         self.window = window
         self.surf.fill((100, 100, 100))
-        pygame.draw.rect(self.surf, (255, 255, 255), [1, 1, 88, 28], 1)
-        pygame.draw.rect(self.surf, (255, 255, 255), [5, 20, 80, 2], 0)
-        pygame.draw.rect(self.surf, (0, 0, 0), [5, 20, 80, 4], 1)
+        pygame.draw.rect(self.surf, (255, 255, 255),\
+                         [1, 1, self.width - 2, self.height - 2], 1)
+        pygame.draw.rect(self.surf, (0, 0, 0),\
+                         [5, 21, self.width - 10, 2], 0)
+        pygame.draw.rect(self.surf, (255, 255, 255),\
+                         [5, 20, self.width - 10, 4], 1)
         self.button_surf = pygame.surface.Surface((20, 20))
         self.button_surf.fill((1, 1, 1))
         self.button_surf.set_colorkey((1, 1, 1))
         pygame.draw.circle(self.button_surf, (255, 255, 255), (10, 10), 3)
-        pygame.draw.circle(self.button_surf, (0, 0, 0), (10, 10), 4, 1)
+        pygame.draw.circle(self.button_surf, (0, 0, 0), (10, 10), 2)
 
     def draw(self):
         surf = self.surf.copy()
         pos = (5 + \
-               int((self.val - self.min_v) / (self.max_v - self.min_v) * 80),\
-               22)
+               int((self.val - self.min_v) / (self.max_v - self.min_v) *\
+                   (self.width - 10)), 22)
         self.button_rect = self.button_surf.get_rect(center=pos)
         surf.blit(self.button_surf, self.button_rect)
         self.button_rect.move_ip(self.xpos, self.ypos)
         center = self.surf.get_rect().center
         self.txt_rect = self.txt_surf.get_rect(center=(center[0],\
-                                                       center[1] - 5))
+                                                       center[1] - 4))
         surf.blit(self.txt_surf, self.txt_rect)
         self.window.blit(surf, (self.xpos, self.ypos))
 
@@ -62,8 +68,8 @@ class Slider():
                            Font('NotoSansMono-Regular.ttf', 10).\
                            render(self.name + f'{self.val:1.3}',\
                                   (255, 255, 255))
-        self.val = (pygame.mouse.get_pos()[0] - self.xpos - 10) / 80 *\
-                   (self.max_v - self.min_v) + self.min_v
+        self.val = (pygame.mouse.get_pos()[0] - self.xpos - 10) /\
+                    (self.width - 10) * (self.max_v - self.min_v) + self.min_v
         if self.val < self.min_v:
             self.val = self.min_v
         if self.val > self.max_v:
@@ -141,9 +147,9 @@ def reactdiffuse():
                                       feed = .0550, kill= .0620)
     reset()
     feed_slider = Slider("f = ", .0550, .01, .1, 20, 20, window)
-    kill_slider = Slider("k = ", .0620, .045, .07, 20, 55, window)
-    diff_A_slider = Slider("D_A = ", 1., .8, 1.2, 20, 90, window)
-    diff_B_slider = Slider("D_B = ", .5, .4, .6, 20, 125, window)
+    kill_slider = Slider("k = ", .0620, .045, .07, 20, 52, window)
+    diff_A_slider = Slider("D_A = ", 1., .8, 1.2, 20, 84, window)
+    diff_B_slider = Slider("D_B = ", .5, .4, .6, 20, 116, window)
     sliders = [feed_slider, kill_slider, diff_A_slider, diff_B_slider]
     variables.hide_sliders = False
     #Main Loop----------------------------------------------------------------
