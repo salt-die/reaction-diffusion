@@ -4,7 +4,7 @@
 Pygame implementation of reaction-diffusion.
 
 'esc' to hide/show the sliders
-click to add more chemical
+click to add more substance
 'r' to reset
 """
 import numpy as np
@@ -85,8 +85,8 @@ def reactdiffuse():
     def update_arrays():
         """
         Vectorized implementation of the Gray-Scott algorithm.
-        
-        Read more here: 
+
+        Read more here:
         https://www.algosome.com/articles/reaction-diffusion-gray-scott.html
         """
         weights = np.array([[.05, .2, .05],\
@@ -115,37 +115,43 @@ def reactdiffuse():
         """
         Takes care of user input.
         """
+        nonlocal running
+        nonlocal hide_sliders
+        nonlocal mouse_down
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                nonlocal running
                 running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     reset()
                 elif event.key == pygame.K_ESCAPE:
-                    nonlocal hide_sliders
                     hide_sliders = not hide_sliders
             elif event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_down = True
                 if event.button == pygame.BUTTON_LEFT:
                     pos = pygame.mouse.get_pos()
                     for slider in sliders:
                         if slider.button_rect.collidepoint(pos):
                             slider.hit = True
-                    if not any([slider.hit for slider in sliders]):
-                        try:
-                            arrays.B[pos[0] - 4:pos[0] + 5,\
-                                     pos[1] - 4:pos[1] + 5] = 1
-                        except ValueError:
-                            #print("Poked too close to border.")
-                            pass
             elif event.type == pygame.MOUSEBUTTONUP:
+                mouse_down = False
                 for slider in sliders:
                     slider.hit = False
                 params.kill = kill_slider.val
                 params.feed = feed_slider.val
                 params.diffusion_of_A = diff_A_slider.val
                 params.diffusion_of_B = diff_B_slider.val
-
+    
+    def add_substance():
+        if not any([slider.hit for slider in sliders]):
+            try:
+                pos = pygame.mouse.get_pos()
+                arrays.B[pos[0] - 4:pos[0] + 5,\
+                         pos[1] - 4:pos[1] + 5] = drop
+            except ValueError:
+                #Too close to border
+                pass
+    
     def reset():
         """
         Resets arrays.
@@ -171,12 +177,25 @@ def reactdiffuse():
                                    feed = .0550, kill= .0620)
     arrays = types.SimpleNamespace()
     reset()
-    feed_slider = Slider("feed = ", .0550, .001, .08, 20, 20, window)
-    kill_slider = Slider("kill = ", .0620, .01, .073, 20, 52, window)
-    diff_A_slider = Slider("diffusion of A = ", 1., .8, 1.2, 20, 84, window)
-    diff_B_slider = Slider("diffusion of B = ", .5, .4, .6, 20, 116, window)
+    feed_slider = Slider("feed = ", params.feed, .001, .08, 20, 20, window)
+    kill_slider = Slider("kill = ", params.kill, .01, .073, 20, 52, window)
+    diff_A_slider = Slider("diffusion of A = ", params.diffusion_of_A,\
+                           .8, 1.2, 20, 84, window)
+    diff_B_slider = Slider("diffusion of B = ", params.diffusion_of_B,\
+                           .4, .6, 20, 116, window)
     sliders = [feed_slider, kill_slider, diff_A_slider, diff_B_slider]
     hide_sliders = False
+    mouse_down = False
+    
+    drop = np.array([[0., 0., 1., 1., 1., 1., 1., 0., 0.],\
+                     [0., 1., 1., 1., 1., 1., 1., 1., 0.],\
+                     [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
+                     [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
+                     [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
+                     [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
+                     [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
+                     [0., 1., 1., 1., 1., 1., 1., 1., 0.],\
+                     [0., 0., 1., 1., 1., 1., 1., 0., 0.],])
     #Main Loop----------------------------------------------------------------
     running = True
     while running:
@@ -184,6 +203,8 @@ def reactdiffuse():
         pygame.surfarray.blit_array(window, color())
         if not hide_sliders:
             draw_sliders()
+        if mouse_down:
+            add_substance()
         pygame.display.update()
         get_user_input()
 
