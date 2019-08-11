@@ -81,33 +81,32 @@ def reactdiffuse():
                             [0.2, -1, 0.2],\
                             [.05, .2, .05]])
 
-        new_A = variables.A_array + \
-                variables.diffusion_of_A *\
-                nd.convolve(variables.A_array, weights, mode='wrap') -\
-                variables.A_array * variables.B_array**2 + \
-                variables.feed * (1 - variables.A_array)
+        new_A = arrays.A + params.diffusion_of_A *\
+                nd.convolve(arrays.A, weights, mode='wrap') -\
+                arrays.A * arrays.B**2 + params.feed * (1 - arrays.A)
 
-        new_B = variables.B_array + \
-                variables.diffusion_of_B *\
-                nd.convolve(variables.B_array, weights, mode='wrap') +\
-                variables.A_array * variables.B_array**2 - \
-                (variables.kill + variables.feed) * variables.B_array
+        new_B = arrays.B + params.diffusion_of_B *\
+                nd.convolve(arrays.B, weights, mode='wrap') +\
+                arrays.A * arrays.B**2 - (params.kill + params.feed) * arrays.B
 
-        return np.clip(new_A, 0, 1), np.clip(new_B, 0, 1)
+        arrays.A = np.clip(new_A, 0, 1)
+        arrays.B = np.clip(new_B, 0, 1)
 
     def color():
-        difference = ((variables.A_array - variables.B_array + 1) * 127.5).astype(int)
+        difference = ((arrays.A - arrays.B + 1) * 127.5).astype(int)
         return np.dstack([difference for i in range(3)])
 
     def get_user_input():
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
-                variables.running = False
+                nonlocal running
+                running = False
             elif event.type == pygame.KEYDOWN:
                 if event.key == pygame.K_r:
                     reset()
                 elif event.key == pygame.K_ESCAPE:
-                    variables.hide_sliders = not variables.hide_sliders
+                    nonlocal hide_sliders
+                    hide_sliders = not hide_sliders
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == pygame.BUTTON_LEFT:
                     pos = pygame.mouse.get_pos()
@@ -116,50 +115,50 @@ def reactdiffuse():
                             slider.hit = True
                     if not any([slider.hit for slider in sliders]):
                         try:
-                            variables.B_array[pos[0] - 4:pos[0] + 5,\
-                                              pos[1] - 4:pos[1] + 5] = 1
+                            arrays.B[pos[0] - 4:pos[0] + 5,\
+                                     pos[1] - 4:pos[1] + 5] = 1
                         except ValueError:
                             #print("Poked too close to border.")
                             pass
             elif event.type == pygame.MOUSEBUTTONUP:
                 for slider in sliders:
                     slider.hit = False
-                variables.kill = kill_slider.val
-                variables.feed = feed_slider.val
-                variables.diffusion_of_A = diff_A_slider.val
-                variables.diffusion_of_B = diff_B_slider.val
+                params.kill = kill_slider.val
+                params.feed = feed_slider.val
+                params.diffusion_of_A = diff_A_slider.val
+                params.diffusion_of_B = diff_B_slider.val
 
     def reset():
-        variables.A_array = np.ones(window_dim, dtype=np.float32)
-        variables.B_array = np.zeros(window_dim, dtype=np.float32)
-        variables.B_array[window_dim[0]//2 - 10: window_dim[0]//2 + 11,\
-                          window_dim[1]//2 - 10: window_dim[1]//2 + 11] = 1
+        arrays.A = np.ones(window_dim, dtype=np.float32)
+        arrays.B = np.zeros(window_dim, dtype=np.float32)
+        arrays.B[window_dim[0]//2 - 10: window_dim[0]//2 + 11,\
+                 window_dim[1]//2 - 10: window_dim[1]//2 + 11] = 1
 
     def draw_sliders():
-        for s in sliders:
-            if s.hit:
-                s.move()
-            s.draw()
+        for slider in sliders:
+            if slider.hit:
+                slider.move()
+            slider.draw()
 
     #Game variables-----------------------------------------------------------
     window_dim = [500, 500]
     window = pygame.display.set_mode(window_dim)
-    variables = types.SimpleNamespace(A_array=0, B_array=0,\
-                                      diffusion_of_A=1., diffusion_of_B=.5,\
-                                      feed = .0550, kill= .0620)
+    params = types.SimpleNamespace(diffusion_of_A=1., diffusion_of_B=.5,\
+                                   feed = .0550, kill= .0620)
+    arrays = types.SimpleNamespace(A = 0, B = 0)
     reset()
     feed_slider = Slider("feed = ", .0550, .01, .1, 20, 20, window)
     kill_slider = Slider("kill = ", .0620, .045, .07, 20, 52, window)
     diff_A_slider = Slider("diffusion of A = ", 1., .8, 1.2, 20, 84, window)
     diff_B_slider = Slider("diffusion of B = ", .5, .4, .6, 20, 116, window)
     sliders = [feed_slider, kill_slider, diff_A_slider, diff_B_slider]
-    variables.hide_sliders = False
+    hide_sliders = False
     #Main Loop----------------------------------------------------------------
-    variables.running = True
-    while variables.running:
-        variables.A_array, variables.B_array = update_arrays()
+    running = True
+    while running:
+        update_arrays()
         pygame.surfarray.blit_array(window, color())
-        if not variables.hide_sliders:
+        if not hide_sliders:
             draw_sliders()
         get_user_input()
         pygame.display.update()
