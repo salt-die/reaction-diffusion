@@ -126,6 +126,8 @@ def reactdiffuse():
                     slider.hit = False
                 variables.kill = kill_slider.val
                 variables.feed = feed_slider.val
+                variables.diffusion_of_A = diff_A_slider.val
+                variables.diffusion_of_B = diff_B_slider.val
 
     def reset():
         variables.A_array = np.ones(window_dim, dtype=np.float32)
