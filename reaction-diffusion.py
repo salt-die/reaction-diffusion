@@ -84,7 +84,10 @@ class Slider():
 def reactdiffuse():
     def update_arrays():
         """
-        This is our vectorized implementation of Reaction-diffusion
+        Vectorized implementation of the Gray-Scott algorithm.
+        
+        Read more here: 
+        https://www.algosome.com/articles/reaction-diffusion-gray-scott.html
         """
         weights = np.array([[.05, .2, .05],\
                             [0.2, -1, 0.2],\
@@ -177,8 +180,7 @@ def reactdiffuse():
     #Main Loop----------------------------------------------------------------
     running = True
     while running:
-        for i in range(5):
-            update_arrays()
+        update_arrays()
         pygame.surfarray.blit_array(window, color())
         if not hide_sliders:
             draw_sliders()
