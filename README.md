@@ -1,4 +1,4 @@
-![reaction-diffusion preview](preview.gif)
+![reaction-diffusion preview](preview-2.gif)
 
 Pygame implementation of reaction-diffusion.
 
