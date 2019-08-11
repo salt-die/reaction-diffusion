@@ -167,8 +167,7 @@ def reactdiffuse():
                                    feed=.01624, kill=.04465)
     arrays = types.SimpleNamespace()
     reset()
-    sliders = []
-    sliders.append(Slider("feed = ", params.feed, .001, .08, 20, 20, window))
+    sliders = [(Slider("feed = ", params.feed, .001, .08, 20, 20, window))]
     sliders.append(Slider("kill = ", params.kill, .01, .073, 20, 52, window))
     sliders.append(Slider("diffusion of A = ", params.diffusion_of_A,\
                            .8, 1.2, 20, 84, window))
