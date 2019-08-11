@@ -50,6 +50,9 @@ class Slider():
         pygame.draw.circle(self.button_surf, (0, 0, 0), (10, 10), 2)
 
     def draw(self):
+        """
+        Draws the slider.
+        """
         surf = self.surf.copy()
         pos = (5 + \
                int((self.val - self.min_v) / (self.max_v - self.min_v) *\
@@ -64,6 +67,9 @@ class Slider():
         self.window.blit(surf, (self.xpos, self.ypos))
 
     def move(self):
+        """
+        Moves the slider handle and updates text.
+        """
         self.txt_surf, _ = pygame.freetype.\
                            Font('NotoSansMono-Regular.ttf', 10).\
                            render(self.name + f'{self.val:1.4}',\
@@ -77,6 +83,9 @@ class Slider():
 
 def reactdiffuse():
     def update_arrays():
+        """
+        This is our vectorized implementation of Reaction-diffusion
+        """
         weights = np.array([[.05, .2, .05],\
                             [0.2, -1, 0.2],\
                             [.05, .2, .05]])
@@ -93,10 +102,16 @@ def reactdiffuse():
         arrays.B = np.clip(new_B, 0, 1)
 
     def color():
+        """
+        Outputs a color array that depends on A & B.
+        """
         difference = ((arrays.A - arrays.B + 1) * 127.5).astype(int)
         return np.dstack([difference for i in range(3)])
 
     def get_user_input():
+        """
+        Takes care of user input.
+        """
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 nonlocal running
@@ -129,12 +144,18 @@ def reactdiffuse():
                 params.diffusion_of_B = diff_B_slider.val
 
     def reset():
+        """
+        Resets arrays.
+        """
         arrays.A = np.ones(window_dim, dtype=np.float32)
         arrays.B = np.zeros(window_dim, dtype=np.float32)
         arrays.B[window_dim[0]//2 - 10: window_dim[0]//2 + 11,\
                  window_dim[1]//2 - 10: window_dim[1]//2 + 11] = 1
 
     def draw_sliders():
+        """
+        Moves slider buttons, then draws the sliders.
+        """
         for slider in sliders:
             if slider.hit:
                 slider.move()
@@ -147,8 +168,8 @@ def reactdiffuse():
                                    feed = .0550, kill= .0620)
     arrays = types.SimpleNamespace()
     reset()
-    feed_slider = Slider("feed = ", .0550, .01, .1, 20, 20, window)
-    kill_slider = Slider("kill = ", .0620, .045, .07, 20, 52, window)
+    feed_slider = Slider("feed = ", .0550, .001, .08, 20, 20, window)
+    kill_slider = Slider("kill = ", .0620, .01, .073, 20, 52, window)
     diff_A_slider = Slider("diffusion of A = ", 1., .8, 1.2, 20, 84, window)
     diff_B_slider = Slider("diffusion of B = ", .5, .4, .6, 20, 116, window)
     sliders = [feed_slider, kill_slider, diff_A_slider, diff_B_slider]
@@ -156,7 +177,8 @@ def reactdiffuse():
     #Main Loop----------------------------------------------------------------
     running = True
     while running:
-        update_arrays()
+        for i in range(5):
+            update_arrays()
         pygame.surfarray.blit_array(window, color())
         if not hide_sliders:
             draw_sliders()
