@@ -175,7 +175,7 @@ def reactdiffuse():
     window_dim = [500, 500]
     window = pygame.display.set_mode(window_dim)
     params = types.SimpleNamespace(diffusion_of_A=1., diffusion_of_B=.5,\
-                                   feed = .01793, kill= .055)
+                                   feed = .01624, kill= .04465)
     arrays = types.SimpleNamespace()
     reset()
     feed_slider = Slider("feed = ", params.feed, .001, .08, 20, 20, window)
