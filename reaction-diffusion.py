@@ -11,7 +11,9 @@ import types
 import numpy as np
 import pygame
 import pygame.freetype
-import scipy.ndimage as nd
+import cv2
+#import scipy.ndimage as nd   #alternative to cv2 for convolution
+
 
 class Slider():
     """
@@ -94,8 +96,12 @@ def reactdiffuse():
                             [0.2, -1, 0.2],\
                             [.05, .2, .05]])
 
-        nd.convolve(arrays.A, weights, mode='wrap', output=arrays.laplace_A)
-        nd.convolve(arrays.B, weights, mode='wrap', output=arrays.laplace_B)
+        cv2.filter2D(arrays.A, ddepth=-1, kernel=weights, dst=arrays.laplace_A,\
+                   borderType=2)
+        cv2.filter2D(arrays.B, ddepth=-1, kernel=weights, dst=arrays.laplace_B,\
+                   borderType=2)
+        #nd.convolve(arrays.A, weights, mode='wrap', output=arrays.laplace_A)
+        #nd.convolve(arrays.B, weights, mode='wrap', output=arrays.laplace_B)
 
         arrays.new_A = arrays.A + params.diffusion_of_A * arrays.laplace_A -\
                        arrays.A * arrays.B**2 + params.feed * (1 - arrays.A)
