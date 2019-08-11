@@ -40,9 +40,9 @@ class Slider():
         pygame.draw.rect(self.surf, (255, 255, 255),\
                          [1, 1, self.width - 2, self.height - 2], 1)
         pygame.draw.rect(self.surf, (0, 0, 0),\
-                         [5, 21, self.width - 10, 2], 0)
+                         [5, self.height - 9, self.width - 10, 2], 0)
         pygame.draw.rect(self.surf, (255, 255, 255),\
-                         [5, 20, self.width - 10, 4], 1)
+                         [5, self.height - 10, self.width - 10, 4], 1)
         self.button_surf = pygame.surface.Surface((20, 20))
         self.button_surf.fill((1, 1, 1))
         self.button_surf.set_colorkey((1, 1, 1))
@@ -53,7 +53,7 @@ class Slider():
         surf = self.surf.copy()
         pos = (5 + \
                int((self.val - self.min_v) / (self.max_v - self.min_v) *\
-                   (self.width - 10)), 22)
+                   (self.width - 10)), self.height - 8)
         self.button_rect = self.button_surf.get_rect(center=pos)
         surf.blit(self.button_surf, self.button_rect)
         self.button_rect.move_ip(self.xpos, self.ypos)
@@ -66,9 +66,9 @@ class Slider():
     def move(self):
         self.txt_surf, _ = pygame.freetype.\
                            Font('NotoSansMono-Regular.ttf', 10).\
-                           render(self.name + f'{self.val:1.3}',\
+                           render(self.name + f'{self.val:1.4}',\
                                   (255, 255, 255))
-        self.val = (pygame.mouse.get_pos()[0] - self.xpos - 10) /\
+        self.val = (pygame.mouse.get_pos()[0] - self.xpos - 5) /\
                     (self.width - 10) * (self.max_v - self.min_v) + self.min_v
         if self.val < self.min_v:
             self.val = self.min_v
@@ -111,10 +111,10 @@ def reactdiffuse():
             elif event.type == pygame.MOUSEBUTTONDOWN:
                 if event.button == pygame.BUTTON_LEFT:
                     pos = pygame.mouse.get_pos()
-                    for s in sliders:
-                        if s.button_rect.collidepoint(pos):
-                            s.hit = True
-                    if not any([s.hit for s in sliders]):
+                    for slider in sliders:
+                        if slider.button_rect.collidepoint(pos):
+                            slider.hit = True
+                    if not any([slider.hit for slider in sliders]):
                         try:
                             variables.B_array[pos[0] - 4:pos[0] + 5,\
                                               pos[1] - 4:pos[1] + 5] = 1
@@ -122,8 +122,8 @@ def reactdiffuse():
                             #print("Poked too close to border.")
                             pass
             elif event.type == pygame.MOUSEBUTTONUP:
-                for s in sliders:
-                    s.hit = False
+                for slider in sliders:
+                    slider.hit = False
                 variables.kill = kill_slider.val
                 variables.feed = feed_slider.val
 
@@ -146,10 +146,10 @@ def reactdiffuse():
                                       diffusion_of_A=1., diffusion_of_B=.5,\
                                       feed = .0550, kill= .0620)
     reset()
-    feed_slider = Slider("f = ", .0550, .01, .1, 20, 20, window)
-    kill_slider = Slider("k = ", .0620, .045, .07, 20, 52, window)
-    diff_A_slider = Slider("D_A = ", 1., .8, 1.2, 20, 84, window)
-    diff_B_slider = Slider("D_B = ", .5, .4, .6, 20, 116, window)
+    feed_slider = Slider("feed = ", .0550, .01, .1, 20, 20, window)
+    kill_slider = Slider("kill = ", .0620, .045, .07, 20, 52, window)
+    diff_A_slider = Slider("diffusion of A = ", 1., .8, 1.2, 20, 84, window)
+    diff_B_slider = Slider("diffusion of B = ", .5, .4, .6, 20, 116, window)
     sliders = [feed_slider, kill_slider, diff_A_slider, diff_B_slider]
     variables.hide_sliders = False
     #Main Loop----------------------------------------------------------------
