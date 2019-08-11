@@ -81,12 +81,12 @@ def reactdiffuse():
                             [0.2, -1, 0.2],\
                             [.05, .2, .05]])
 
-        new_A = arrays.A + params.diffusion_of_A *\
-                nd.convolve(arrays.A, weights, mode='wrap') -\
-                arrays.A * arrays.B**2 + params.feed * (1 - arrays.A)
+        arrays.laplace_A = nd.convolve(arrays.A, weights, mode='wrap')
+        arrays.laplace_B = nd.convolve(arrays.B, weights, mode='wrap')
 
-        new_B = arrays.B + params.diffusion_of_B *\
-                nd.convolve(arrays.B, weights, mode='wrap') +\
+        new_A = arrays.A + params.diffusion_of_A * arrays.laplace_A -\
+                arrays.A * arrays.B**2 + params.feed * (1 - arrays.A)
+        new_B = arrays.B + params.diffusion_of_B * arrays.laplace_B +\
                 arrays.A * arrays.B**2 - (params.kill + params.feed) * arrays.B
 
         arrays.A = np.clip(new_A, 0, 1)
@@ -145,7 +145,7 @@ def reactdiffuse():
     window = pygame.display.set_mode(window_dim)
     params = types.SimpleNamespace(diffusion_of_A=1., diffusion_of_B=.5,\
                                    feed = .0550, kill= .0620)
-    arrays = types.SimpleNamespace(A = 0, B = 0)
+    arrays = types.SimpleNamespace()
     reset()
     feed_slider = Slider("feed = ", .0550, .01, .1, 20, 20, window)
     kill_slider = Slider("kill = ", .0620, .045, .07, 20, 52, window)
@@ -160,15 +160,15 @@ def reactdiffuse():
         pygame.surfarray.blit_array(window, color())
         if not hide_sliders:
             draw_sliders()
-        get_user_input()
         pygame.display.update()
+        get_user_input()
 
 def main():
     """
     Starts reaction. Ends the reaction.
     """
     pygame.init()
-    pygame.display.set_caption('reaction diffusion')
+    pygame.display.set_caption('reaction-diffusion')
     reactdiffuse()
     pygame.quit()
 
