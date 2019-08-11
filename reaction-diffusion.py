@@ -28,26 +28,34 @@ class Slider():
         self.surf.set_alpha(200)
         self.name = name
         self.hit = False
-        self.txt_surf, _ = pygame.freetype.\
-                           Font('NotoSansMono-Regular.ttf', 10).\
-                           render(self.name + f'{self.val:1.2}',\
-                                  (255, 255, 255))
+        self.txt_surf, self.txt_rect = pygame.freetype.\
+                                       Font('NotoSansMono-Regular.ttf', 10).\
+                                       render(self.name + f'{self.val:1.2}',\
+                                              (255, 255, 255))
         self.window = window
         self.surf.fill((100, 100, 100))
+        pygame.draw.rect(self.surf, (255, 255, 255), [1, 1, 88, 28], 1)
         pygame.draw.rect(self.surf, (255, 255, 255), [5, 20, 80, 2], 0)
+        pygame.draw.rect(self.surf, (0, 0, 0), [5, 20, 80, 4], 1)
         self.button_surf = pygame.surface.Surface((20, 20))
         self.button_surf.fill((1, 1, 1))
         self.button_surf.set_colorkey((1, 1, 1))
-        pygame.draw.circle(self.button_surf, (0, 0, 0), (10, 10), 3)
+        pygame.draw.circle(self.button_surf, (255, 255, 255), (10, 10), 3)
+        pygame.draw.circle(self.button_surf, (0, 0, 0), (10, 10), 4, 1)
 
     def draw(self):
         surf = self.surf.copy()
-        pos = (5 + int((self.val-self.min_v) / (self.max_v-self.min_v) * 80), 21)
+        pos = (5 + \
+               int((self.val - self.min_v) / (self.max_v - self.min_v) * 80),\
+               22)
         self.button_rect = self.button_surf.get_rect(center=pos)
         surf.blit(self.button_surf, self.button_rect)
         self.button_rect.move_ip(self.xpos, self.ypos)
+        center = self.surf.get_rect().center
+        self.txt_rect = self.txt_surf.get_rect(center=(center[0],\
+                                                       center[1] - 5))
+        surf.blit(self.txt_surf, self.txt_rect)
         self.window.blit(surf, (self.xpos, self.ypos))
-        self.window.blit(self.txt_surf, (self.xpos + 15, self.ypos + 5))
 
     def move(self):
         self.txt_surf, _ = pygame.freetype.\
