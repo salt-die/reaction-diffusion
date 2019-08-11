@@ -7,11 +7,11 @@ Pygame implementation of reaction-diffusion.
 click to add more substance
 'r' to reset
 """
+import types
 import numpy as np
 import pygame
 import pygame.freetype
 import scipy.ndimage as nd
-import types
 
 class Slider():
     """
@@ -20,22 +20,22 @@ class Slider():
     """
     def __init__(self, name, val, min_v, max_v, xpos, ypos, window,\
                  width=150, height=30):
+        self.name = name
         self.val = val
         self.min_v = min_v
         self.max_v = max_v
         self.xpos = xpos
         self.ypos = ypos
+        self.window = window
         self.width = width
         self.height = height
+        self.hit = False
         self.surf = pygame.surface.Surface((self.width, self.height))
         self.surf.set_alpha(200)
-        self.name = name
-        self.hit = False
         self.txt_surf, self.txt_rect = pygame.freetype.\
                                        Font('NotoSansMono-Regular.ttf', 10).\
                                        render(self.name + f'{self.val:1.2}',\
                                               (255, 255, 255))
-        self.window = window
         self.surf.fill((100, 100, 100))
         pygame.draw.rect(self.surf, (255, 255, 255),\
                          [1, 1, self.width - 2, self.height - 2], 1)
@@ -44,6 +44,7 @@ class Slider():
         pygame.draw.rect(self.surf, (255, 255, 255),\
                          [5, self.height - 10, self.width - 10, 4], 1)
         self.button_surf = pygame.surface.Surface((20, 20))
+        self.button_rect = self.button_surf.get_rect()
         self.button_surf.fill((1, 1, 1))
         self.button_surf.set_colorkey((1, 1, 1))
         pygame.draw.circle(self.button_surf, (255, 255, 255), (10, 10), 3)
@@ -106,16 +107,10 @@ def reactdiffuse():
         arrays.B = np.clip(arrays.new_B, 0, 1)
 
     def color():
-        """
-        Outputs a color array that depends on A & B.
-        """
         difference = ((arrays.B - arrays.A+ 1) * 127.5).astype(int)
         return np.dstack([difference for i in range(3)])
 
     def get_user_input():
-        """
-        Takes care of user input.
-        """
         nonlocal running
         nonlocal hide_sliders
         nonlocal mouse_down
@@ -138,10 +133,10 @@ def reactdiffuse():
                 mouse_down = False
                 for slider in sliders:
                     slider.hit = False
-                params.kill = kill_slider.val
-                params.feed = feed_slider.val
-                params.diffusion_of_A = diff_A_slider.val
-                params.diffusion_of_B = diff_B_slider.val
+                params.kill = sliders[0].val
+                params.feed = sliders[1].val
+                params.diffusion_of_A = sliders[2].val
+                params.diffusion_of_B = sliders[3].val
 
     def add_substance():
         if not any([slider.hit for slider in sliders]):
@@ -154,18 +149,12 @@ def reactdiffuse():
                 pass
 
     def reset():
-        """
-        Resets arrays.
-        """
         arrays.A = np.ones(window_dim, dtype=np.float32)
         arrays.B = np.zeros(window_dim, dtype=np.float32)
         arrays.B[window_dim[0]//2 - 10: window_dim[0]//2 + 11,\
                  window_dim[1]//2 - 10: window_dim[1]//2 + 11] = 1
 
     def draw_sliders():
-        """
-        Moves slider buttons, then draws the sliders.
-        """
         for slider in sliders:
             if slider.hit:
                 slider.move()
@@ -175,16 +164,16 @@ def reactdiffuse():
     window_dim = [500, 500]
     window = pygame.display.set_mode(window_dim)
     params = types.SimpleNamespace(diffusion_of_A=1., diffusion_of_B=.5,\
-                                   feed = .01624, kill= .04465)
+                                   feed=.01624, kill=.04465)
     arrays = types.SimpleNamespace()
     reset()
-    feed_slider = Slider("feed = ", params.feed, .001, .08, 20, 20, window)
-    kill_slider = Slider("kill = ", params.kill, .01, .073, 20, 52, window)
-    diff_A_slider = Slider("diffusion of A = ", params.diffusion_of_A,\
-                           .8, 1.2, 20, 84, window)
-    diff_B_slider = Slider("diffusion of B = ", params.diffusion_of_B,\
-                           .4, .6, 20, 116, window)
-    sliders = [feed_slider, kill_slider, diff_A_slider, diff_B_slider]
+    sliders = []
+    sliders.append(Slider("feed = ", params.feed, .001, .08, 20, 20, window))
+    sliders.append(Slider("kill = ", params.kill, .01, .073, 20, 52, window))
+    sliders.append(Slider("diffusion of A = ", params.diffusion_of_A,\
+                           .8, 1.2, 20, 84, window))
+    sliders.append(Slider("diffusion of B = ", params.diffusion_of_B,\
+                           .4, .6, 20, 116, window))
     hide_sliders = False
     mouse_down = False
 
@@ -210,9 +199,6 @@ def reactdiffuse():
         get_user_input()
 
 def main():
-    """
-    Starts reaction. Ends the reaction.
-    """
     pygame.init()
     pygame.display.set_caption('reaction-diffusion')
     reactdiffuse()
