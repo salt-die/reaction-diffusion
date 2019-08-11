@@ -94,8 +94,8 @@ def reactdiffuse():
                             [0.2, -1, 0.2],\
                             [.05, .2, .05]])
 
-        arrays.laplace_A = nd.convolve(arrays.A, weights, mode='wrap')
-        arrays.laplace_B = nd.convolve(arrays.B, weights, mode='wrap')
+        nd.convolve(arrays.A, weights, mode='wrap', output=arrays.laplace_A)
+        nd.convolve(arrays.B, weights, mode='wrap', output=arrays.laplace_B)
 
         arrays.new_A = arrays.A + params.diffusion_of_A * arrays.laplace_A -\
                        arrays.A * arrays.B**2 + params.feed * (1 - arrays.A)
@@ -166,6 +166,8 @@ def reactdiffuse():
     params = types.SimpleNamespace(diffusion_of_A=1., diffusion_of_B=.5,\
                                    feed=.01624, kill=.04465)
     arrays = types.SimpleNamespace()
+    arrays.laplace_A = np.zeros(window_dim, dtype=np.float32)
+    arrays.laplace_B = np.zeros(window_dim, dtype=np.float32)
     reset()
     sliders = [(Slider("feed = ", params.feed, .001, .08, 20, 20, window))]
     sliders.append(Slider("kill = ", params.kill, .01, .073, 20, 52, window))
