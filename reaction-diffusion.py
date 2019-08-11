@@ -133,8 +133,8 @@ def reactdiffuse():
                 mouse_down = False
                 for slider in sliders:
                     slider.hit = False
-                params.kill = sliders[0].val
-                params.feed = sliders[1].val
+                params.feed = sliders[0].val
+                params.kill = sliders[1].val
                 params.diffusion_of_A = sliders[2].val
                 params.diffusion_of_B = sliders[3].val
 
