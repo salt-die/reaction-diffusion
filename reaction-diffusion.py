@@ -92,26 +92,41 @@ def reactdiffuse():
                             [0.2, -1, 0.2],\
                             [.05, .2, .05]])
 
-        cv2.filter2D(arrays.A, ddepth=-1, kernel=weights,\
+        cv2.filter2D(arrays.A, ddepth=-1,\
+                     kernel=params.diffusion_of_A * weights,\
                      dst=arrays.laplace_A, borderType=2)
-        cv2.filter2D(arrays.B, ddepth=-1, kernel=weights,\
+        cv2.filter2D(arrays.B, ddepth=-1,\
+                     kernel=params.diffusion_of_B * weights,\
                      dst=arrays.laplace_B, borderType=2)
         #Alternatively, use scipy convolution:
         #nd.convolve(arrays.A, weights, mode='wrap', output=arrays.laplace_A)
         #nd.convolve(arrays.B, weights, mode='wrap', output=arrays.laplace_B)
 
-        arrays.new_A = arrays.A + params.diffusion_of_A * arrays.laplace_A -\
-                       arrays.A * arrays.B**2 + params.feed * (1 - arrays.A)
-        arrays.new_B = arrays.B + params.diffusion_of_B * arrays.laplace_B +\
-                       arrays.A * arrays.B**2 - \
-                       (params.kill + params.feed) * arrays.B
-
-        arrays.A = np.clip(arrays.new_A, 0, 1)
-        arrays.B = np.clip(arrays.new_B, 0, 1)
+        #React chance is used in both equations
+        np.multiply(arrays.B, arrays.B, out=arrays.react_chance)
+        np.multiply(arrays.A, arrays.react_chance, out=arrays.react_chance)
+        #First Equation done in place
+        np.multiply(arrays.A, 1 - params.feed, out=arrays.new_A)
+        np.add(arrays.new_A, arrays.laplace_A, out=arrays.new_A)
+        np.subtract(arrays.new_A, arrays.react_chance, out=arrays.new_A)
+        np.add(arrays.new_A, params.feed, out=arrays.new_A)
+        #Second Equation done in place
+        np.multiply(arrays.B, 1 - params.kill - params.feed, out=arrays.new_B)
+        np.add(arrays.new_B, arrays.laplace_B, out=arrays.new_B)
+        np.add(arrays.new_B, arrays.react_chance, out=arrays.new_B)
+        #Clip arrays
+        np.clip(arrays.new_A, 0, 1, out=arrays.A)
+        np.clip(arrays.new_B, 0, 1, out=arrays.B)
 
     def color():
-        difference = ((arrays.B - arrays.A + 1) * 127.5).astype(int)
-        return np.dstack([difference for i in range(3)])
+        """
+        Currently we are scaling the difference, B-A, to be between 0 and 255,
+        then we stack that value 3 times to create a (R,G,B) color.
+        """
+        np.subtract(arrays.B, arrays.A, out=arrays.difference)
+        np.add(arrays.difference, 1, out=arrays.difference)
+        np.multiply(arrays.difference, 127.5, out=arrays.difference)
+        return np.dstack([arrays.difference]*3)
 
     def get_user_input():
         nonlocal running
@@ -171,6 +186,10 @@ def reactdiffuse():
     arrays = types.SimpleNamespace()
     arrays.laplace_A = np.zeros(window_dim, dtype=np.float32)
     arrays.laplace_B = np.zeros(window_dim, dtype=np.float32)
+    arrays.react_chance = np.zeros(window_dim, dtype=np.float32)
+    arrays.new_A = np.zeros(window_dim, dtype=np.float32)
+    arrays.new_B = np.zeros(window_dim, dtype=np.float32)
+    arrays.difference = np.zeros(window_dim, dtype=np.float32)
     reset()
     sliders = [(Slider("feed = ", params.feed, [.001, .08], [20, 20], window))]
     sliders.append(Slider("kill = ", params.kill,\
@@ -194,6 +213,7 @@ def reactdiffuse():
     #Main Loop----------------------------------------------------------------
     running = True
     while running:
+        update_arrays()
         update_arrays()
         pygame.surfarray.blit_array(window, color())
         if not hide_sliders:
