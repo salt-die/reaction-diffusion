@@ -20,24 +20,17 @@ class Slider():
     Slider code lifted from
     https://www.dreamincode.net/forums/topic/401541-buttons-and-sliders-in-pygame/
     """
-    def __init__(self, name, val, min_v, max_v, xpos, ypos, window,\
-                 width=150, height=30):
+    def __init__(self, name, val, min_max, pos, window, dim=[150, 30]):
         self.name = name
         self.val = val
-        self.min_v = min_v
-        self.max_v = max_v
-        self.xpos = xpos
-        self.ypos = ypos
+        self.min_v, self.max_v = min_max
+        self.xpos, self.ypos = pos
         self.window = window
-        self.width = width
-        self.height = height
+        self.width, self.height = dim
         self.hit = False
+        #Slider background
         self.surf = pygame.surface.Surface((self.width, self.height))
         self.surf.set_alpha(200)
-        self.txt_surf, self.txt_rect = pygame.freetype.\
-                                       Font('NotoSansMono-Regular.ttf', 10).\
-                                       render(self.name + f'{self.val:1.2}',\
-                                              (255, 255, 255))
         self.surf.fill((100, 100, 100))
         pygame.draw.rect(self.surf, (255, 255, 255),\
                          [1, 1, self.width - 2, self.height - 2], 1)
@@ -45,6 +38,12 @@ class Slider():
                          [5, self.height - 9, self.width - 10, 2], 0)
         pygame.draw.rect(self.surf, (255, 255, 255),\
                          [5, self.height - 10, self.width - 10, 4], 1)
+        #Slider text
+        self.txt_surf, self.txt_rect = pygame.freetype.\
+                                       Font('NotoSansMono-Regular.ttf', 10).\
+                                       render(self.name + f'{self.val:1.2}',\
+                                              (255, 255, 255))
+        #Slider button
         self.button_surf = pygame.surface.Surface((20, 20))
         self.button_rect = self.button_surf.get_rect()
         self.button_surf.fill((1, 1, 1))
@@ -78,11 +77,8 @@ class Slider():
                            render(self.name + f'{self.val:1.4}',\
                                   (255, 255, 255))
         self.val = (pygame.mouse.get_pos()[0] - self.xpos - 5) /\
-                    (self.width - 10) * (self.max_v - self.min_v) + self.min_v
-        if self.val < self.min_v:
-            self.val = self.min_v
-        if self.val > self.max_v:
-            self.val = self.max_v
+                   (self.width - 10) * (self.max_v - self.min_v) + self.min_v
+        self.val = np.clip(self.val, self.min_v, self.max_v)
 
 def reactdiffuse():
     def update_arrays():
@@ -96,10 +92,10 @@ def reactdiffuse():
                             [0.2, -1, 0.2],\
                             [.05, .2, .05]])
 
-        cv2.filter2D(arrays.A, ddepth=-1, kernel=weights, dst=arrays.laplace_A,\
-                   borderType=2)
-        cv2.filter2D(arrays.B, ddepth=-1, kernel=weights, dst=arrays.laplace_B,\
-                   borderType=2)
+        cv2.filter2D(arrays.A, ddepth=-1, kernel=weights,\
+                     dst=arrays.laplace_A, borderType=2)
+        cv2.filter2D(arrays.B, ddepth=-1, kernel=weights,\
+                     dst=arrays.laplace_B, borderType=2)
         #nd.convolve(arrays.A, weights, mode='wrap', output=arrays.laplace_A)
         #nd.convolve(arrays.B, weights, mode='wrap', output=arrays.laplace_B)
 
@@ -113,7 +109,7 @@ def reactdiffuse():
         arrays.B = np.clip(arrays.new_B, 0, 1)
 
     def color():
-        difference = ((arrays.B - arrays.A+ 1) * 127.5).astype(int)
+        difference = ((arrays.B - arrays.A + 1) * 127.5).astype(int)
         return np.dstack([difference for i in range(3)])
 
     def get_user_input():
@@ -175,12 +171,13 @@ def reactdiffuse():
     arrays.laplace_A = np.zeros(window_dim, dtype=np.float32)
     arrays.laplace_B = np.zeros(window_dim, dtype=np.float32)
     reset()
-    sliders = [(Slider("feed = ", params.feed, .001, .08, 20, 20, window))]
-    sliders.append(Slider("kill = ", params.kill, .01, .073, 20, 52, window))
+    sliders = [(Slider("feed = ", params.feed, [.001, .08], [20, 20], window))]
+    sliders.append(Slider("kill = ", params.kill,\
+                          [.01, .073], [20, 52], window))
     sliders.append(Slider("diffusion of A = ", params.diffusion_of_A,\
-                           .8, 1.2, 20, 84, window))
+                           [.8, 1.2], [20, 84], window))
     sliders.append(Slider("diffusion of B = ", params.diffusion_of_B,\
-                           .4, .6, 20, 116, window))
+                           [.4, .6], [20, 116], window))
     hide_sliders = False
     mouse_down = False
 
