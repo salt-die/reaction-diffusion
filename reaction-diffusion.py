@@ -96,6 +96,7 @@ def reactdiffuse():
                      dst=arrays.laplace_A, borderType=2)
         cv2.filter2D(arrays.B, ddepth=-1, kernel=weights,\
                      dst=arrays.laplace_B, borderType=2)
+        #Alternatively, use scipy convolution:
         #nd.convolve(arrays.A, weights, mode='wrap', output=arrays.laplace_A)
         #nd.convolve(arrays.B, weights, mode='wrap', output=arrays.laplace_B)
 
