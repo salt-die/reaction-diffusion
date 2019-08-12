@@ -41,7 +41,7 @@ class Slider():
         #Slider text
         self.txt_surf, self.txt_rect = pygame.freetype.\
                                        Font('NotoSansMono-Regular.ttf', 10).\
-                                       render(self.name + f'{self.val:1.2}',\
+                                       render(self.name + f'{self.val:.4}',\
                                               (255, 255, 255))
         #Slider button
         self.button_surf = pygame.surface.Surface((20, 20))
@@ -74,7 +74,7 @@ class Slider():
         """
         self.txt_surf, _ = pygame.freetype.\
                            Font('NotoSansMono-Regular.ttf', 10).\
-                           render(self.name + f'{self.val:1.4}',\
+                           render(self.name + f'{self.val:.4}',\
                                   (255, 255, 255))
         self.val = (pygame.mouse.get_pos()[0] - self.xpos - 5) /\
                    (self.width - 10) * (self.max_v - self.min_v) + self.min_v
