@@ -88,15 +88,11 @@ def reactdiffuse():
         Read more here:
         https://www.algosome.com/articles/reaction-diffusion-gray-scott.html
         """
-        weights = np.array([[.05, .2, .05],\
-                            [0.2, -1, 0.2],\
-                            [.05, .2, .05]])
-
         cv2.filter2D(arrays.A, ddepth=-1,\
-                     kernel=params.diffusion_of_A * weights,\
+                     kernel=params.diffusion_of_A * arrays.kernel,\
                      dst=arrays.laplace_A, borderType=2)
         cv2.filter2D(arrays.B, ddepth=-1,\
-                     kernel=params.diffusion_of_B * weights,\
+                     kernel=params.diffusion_of_B * arrays.kernel,\
                      dst=arrays.laplace_B, borderType=2)
         #Alternatively, use scipy convolution:
         #nd.convolve(arrays.A, weights, mode='wrap', output=arrays.laplace_A)
@@ -161,7 +157,7 @@ def reactdiffuse():
             try:
                 pos = pygame.mouse.get_pos()
                 arrays.B[pos[0] - 4:pos[0] + 5,\
-                         pos[1] - 4:pos[1] + 5] = drop
+                         pos[1] - 4:pos[1] + 5] = arrays.drop
             except ValueError:
                 #Too close to border
                 pass
@@ -190,6 +186,9 @@ def reactdiffuse():
     arrays.new_A = np.zeros(window_dim, dtype=np.float32)
     arrays.new_B = np.zeros(window_dim, dtype=np.float32)
     arrays.difference = np.zeros(window_dim, dtype=np.float32)
+    arrays.kernel = np.array([[.05, .2, .05],\
+                              [0.2, -1, 0.2],\
+                              [.05, .2, .05]])
     reset()
     sliders = [(Slider("feed = ", params.feed, [.001, .08], [20, 20], window))]
     sliders.append(Slider("kill = ", params.kill,\
@@ -201,19 +200,18 @@ def reactdiffuse():
     hide_sliders = False
     mouse_down = False
 
-    drop = np.array([[0., 0., 1., 1., 1., 1., 1., 0., 0.],\
-                     [0., 1., 1., 1., 1., 1., 1., 1., 0.],\
-                     [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
-                     [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
-                     [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
-                     [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
-                     [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
-                     [0., 1., 1., 1., 1., 1., 1., 1., 0.],\
-                     [0., 0., 1., 1., 1., 1., 1., 0., 0.],])
+    arrays.drop = np.array([[0., 0., 1., 1., 1., 1., 1., 0., 0.],\
+                            [0., 1., 1., 1., 1., 1., 1., 1., 0.],\
+                            [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
+                            [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
+                            [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
+                            [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
+                            [1., 1., 1., 1., 1., 1., 1., 1., 1.],\
+                            [0., 1., 1., 1., 1., 1., 1., 1., 0.],\
+                            [0., 0., 1., 1., 1., 1., 1., 0., 0.],])
     #Main Loop----------------------------------------------------------------
     running = True
     while running:
-        update_arrays()
         update_arrays()
         pygame.surfarray.blit_array(window, color())
         if not hide_sliders:
